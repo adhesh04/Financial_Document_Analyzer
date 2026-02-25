@@ -1,0 +1,8 @@
+crewai==0.130.0
+crewai-tools==0.47.1
+fastapi==0.110.3
+uvicorn
+python-dotenv
+langchain-community
+pypdf
+python-multipart
