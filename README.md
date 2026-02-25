@@ -379,3 +379,221 @@ Avoided personalized financial advice
 Cleaned and validated tool input
 
 Deleted temporary files after processing
+
+🚀 Multi-Agent Architecture Enhancement
+
+After stabilizing the tool system and prompt logic, the system was upgraded into a fully functional sequential multi-agent pipeline instead of a single-agent execution model.
+
+Agents Integrated
+
+1️⃣ Financial Document Verifier
+Validates whether the uploaded file is a legitimate financial report.
+
+2️⃣ Senior Financial Analyst
+Uses the custom PDF extraction tool to return strictly structured financial metrics in JSON format.
+
+3️⃣ Financial Risk Analyst
+Identifies financial and operational risks based strictly on extracted metrics.
+
+4️⃣ Investment Strategist
+Generates an investment outlook grounded only in verified financial data.
+
+Improvements Made
+
+Enforced structured JSON output from the analyst agent
+
+Prevented manual calculations outside the tool
+
+Limited agent iteration cycles to avoid infinite reasoning loops
+
+Disabled delegation to maintain deterministic execution
+
+Reduced temperature for consistent financial reasoning
+
+This transformed the system into a true multi-agent reasoning architecture.
+
+⚡ Asynchronous Processing Upgrade (Celery + Redis)
+
+The original architecture executed CrewAI inside the FastAPI request cycle.
+This caused:
+
+Long blocking API calls
+
+Poor scalability
+
+Timeout risk on large documents
+
+To resolve this, the system was upgraded to a distributed async model.
+
+🔴 Redis Integration (Dockerized)
+
+Redis is used as:
+
+Message broker
+
+Result backend
+
+When a document is uploaded:
+
+FastAPI queues the task in Redis
+
+Celery worker consumes the task
+
+CrewAI multi-agent pipeline executes
+
+Result is stored back in Redis
+
+Redis Setup:
+
+docker run -d -p 6379:6379 --name redis-server redis
+🟢 Celery Worker Integration
+
+Celery handles:
+
+Heavy AI workload execution
+
+Background processing
+
+Task state management (PENDING → SUCCESS / FAILURE)
+
+Worker Start Command (Windows Compatible):
+
+python -m celery -A celery_app.celery_app worker --loglevel=info --pool=solo
+
+--pool=solo ensures stable multiprocessing on Windows.
+
+📡 Updated API Flow
+1️⃣ Submit Analysis
+
+POST /analyze
+
+Instead of blocking until completion, the API now returns:
+
+{
+  "status": "processing",
+  "job_id": "uuid"
+}
+2️⃣ Poll Task Status
+
+GET /status/{job_id}
+
+Possible responses:
+
+While Processing
+
+{
+  "status": "pending"
+}
+
+On Completion
+
+{
+  "status": "completed",
+  "result": "analysis output"
+}
+
+This ensures a non-blocking user experience.
+
+🗄 Database Integration (Persistent Storage)
+
+To satisfy bonus requirements and improve enterprise readiness, SQLite persistence was introduced.
+
+Why Add Persistence?
+
+Redis stores results temporarily.
+A database enables:
+
+Long-term storage of analysis history
+
+Audit trail of uploaded documents
+
+Query tracking
+
+Historical retrieval
+
+Stored Fields
+
+Analysis ID
+
+Filename
+
+User query
+
+AI result
+
+Timestamp
+
+Endpoint:
+
+GET /history
+
+This allows retrieval of past analyses.
+
+🏗 Final System Architecture
+
+The project evolved from a simple synchronous API into a distributed architecture:
+
+User Upload (PDF)
+↓
+FastAPI Endpoint
+↓
+Redis Queue
+↓
+Celery Worker
+↓
+CrewAI Multi-Agent Pipeline
+↓
+Redis Result Backend
+↓
+SQLite Persistent Storage
+
+⚙ Service Execution Model
+
+The system now runs using three parallel services:
+
+🟢 Redis (Docker Container)
+🟢 Celery Worker
+🟢 FastAPI Server
+
+This architecture:
+
+Prevents API blocking
+
+Handles concurrent requests
+
+Scales horizontally (multiple workers possible)
+
+Supports long-running LLM tasks safely
+
+📈 Architectural Evolution Summary
+Feature	Before	After
+API Blocking	Yes	No
+Multi-Agent Execution	Partial	Full Sequential Pipeline
+Task Queue	No	Redis
+Background Processing	No	Celery
+Persistent Storage	No	SQLite
+Concurrency Support	No	Yes
+Production Ready	Limited	Significantly Improved
+🎯 Final Outcome
+
+The system has evolved into:
+
+✔ A deterministic multi-agent AI financial analysis system
+✔ An asynchronous distributed backend architecture
+✔ A Docker-integrated infrastructure
+✔ A persistent, auditable analysis platform
+✔ A scalable production-ready design
+
+The project now demonstrates:
+
+Debugging expertise
+
+Prompt engineering refinement
+
+Multi-agent orchestration
+
+Distributed systems understanding
+
+Background job processing
+
+Infrastructure integration
